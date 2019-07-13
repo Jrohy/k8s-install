@@ -72,6 +72,16 @@ checkSys() {
 
 }
 
+#安装依赖
+installDependent(){
+    if [[ ${OS} == 'CentOS' || ${OS} == 'Fedora' ]];then
+        ${PACKAGE_MANAGER} install bash-completion -y
+    else
+        ${PACKAGE_MANAGER} update
+        ${PACKAGE_MANAGER} install bash-completion apt-transport-https gpg -y
+    fi
+}
+
 prepareWork() {
     ## 安装最新版docker
     if [[ ! $(type docker 2>/dev/null) ]];then
@@ -105,7 +115,6 @@ gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cl
 EOF
             yum install -y kubelet kubeadm kubectl
         else
-            apt-get update && apt-get install -y apt-transport-https
             curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
             echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | tee -a /etc/apt/sources.list.d/kubernetes.list
             apt-get update
@@ -122,7 +131,6 @@ gpgkey=https://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg
 EOF
             yum install -y kubelet kubeadm kubectl
         else
-            apt-get update && apt-get install -y apt-transport-https gpg
             cat <<EOF > /etc/apt/sources.list.d/kubernetes.list
 deb https://mirrors.aliyun.com/kubernetes/apt kubernetes-xenial main
 EOF
@@ -132,11 +140,18 @@ EOF
             apt-get install -y kubelet kubeadm kubectl
         fi
     fi
+    systemctl enable kubelet && systemctl start kubelet
+
+    #命令行补全
+    echo "source <(kubectl completion bash)" >> ~/.bashrc
+    echo "source <(kubeadm completion bash)" >> ~/.bashrc
+    source ~/.bashrc
 }
 
 main() {
     checkSys
     prepareWork
+    installDependent
     installK8sBase
 }
 
