@@ -19,6 +19,12 @@ GOOGLE_URLS=(
 
 CAN_GOOGLE=1
 
+IS_MASTER=0
+
+NETWORK=""
+
+K8S_VERSION=""
+
 colorEcho(){
     COLOR=$1
     echo -e "\033[${COLOR}${@:2}\033[0m"
@@ -32,6 +38,44 @@ ipIsConnect(){
         return 1
     fi
 }
+
+runCommand(){
+    COMMAND=$1
+    colorEcho $GREEN $1
+    eval $1
+}
+
+#######get params#########
+while [[ $# > 0 ]];do
+    KEY="$1"
+    case $KEY in
+        --hostname)
+        HOST_NAME="$2"
+        echo "本机设置的主机名为: `colorEcho $BLUE $HOST_NAME`"
+        runCommand "hostnamectl --static set-hostname $HOST_NAME"
+        shift
+        --flannel)
+        echo "当前节点设置为master节点,使用flannel网络"
+        NETWORK="flannel"
+        IS_MASTER=1
+        shift
+        -h|--help)
+        echo "Usage: $0 [OPTIONS]"
+        echo "Options:"
+        echo "   -f [file_path], --file=[file_path]:  offline tgz file path"
+        echo "   -h, --help:                          find help"
+        echo ""
+        echo "Docker binary download link:  $(colorEcho $FUCHSIA $DOWNLOAD_URL)"
+        exit 0
+        shift # past argument
+        ;; 
+        *)
+                # unknown option
+        ;;
+    esac
+    shift # past argument or value
+done
+#############################
 
 checkSys() {
     #检查是否为Root
@@ -51,9 +95,6 @@ checkSys() {
         PACKAGE_MANAGER='apt-get'
     elif [[ $(cat /etc/issue | grep Ubuntu) ]];then
         OS='Ubuntu'
-        PACKAGE_MANAGER='apt-get'
-    elif [[ $(cat /etc/issue | grep Raspbian) ]];then
-        OS='Raspbian'
         PACKAGE_MANAGER='apt-get'
     else
         colorEcho ${RED} "Not support OS, Please reinstall OS and retry!"
@@ -143,9 +184,18 @@ EOF
     systemctl enable kubelet && systemctl start kubelet
 
     #命令行补全
-    echo "source <(kubectl completion bash)" >> ~/.bashrc
-    echo "source <(kubeadm completion bash)" >> ~/.bashrc
+    [[ -z $(grep kubectl ~/.bashrc) ]] && echo "source <(kubectl completion bash)" >> ~/.bashrc
+    [[ -z $(grep kubeadm ~/.bashrc) ]] && echo "source <(kubeadm completion bash)" >> ~/.bashrc
     source ~/.bashrc
+    colorEcho $YELLOW "kubectl和kubeadm命令补全重开终端生效!"
+}
+
+runK8s(){
+    if [[ $IS_MASTER == 1 ]];then
+        
+    else
+
+    fi
 }
 
 main() {
