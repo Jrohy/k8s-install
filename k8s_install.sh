@@ -67,6 +67,7 @@ while [[ $# > 0 ]];do
         echo "当前节点设置为master节点,使用calico网络"
         NETWORK="calico"
         IS_MASTER=1
+        ;;
         --helm)
         echo "安装Helm"
         HELM=1
