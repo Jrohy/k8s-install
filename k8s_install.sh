@@ -234,7 +234,7 @@ installHelm(){
         curl -L https://git.io/get_helm.sh | bash
         helm init
         #命令行补全
-        [[ -z $(grep helm ~/.bashrc) ]] && echo "source <(helm completion bash)" >> ~/.bashrc
+        [[ -z $(grep helm ~/.bashrc) ]] && { echo "source <(helm completion bash)" >> ~/.bashrc; source ~/.bashrc; }
     fi
 }
 
