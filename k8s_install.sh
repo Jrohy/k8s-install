@@ -54,15 +54,17 @@ while [[ $# > 0 ]];do
         echo "本机设置的主机名为: `colorEcho $BLUE $HOST_NAME`"
         runCommand "hostnamectl --static set-hostname $HOST_NAME"
         shift
+        ;;
         --flannel)
         echo "当前节点设置为master节点,使用flannel网络"
         NETWORK="flannel"
         IS_MASTER=1
+        ;;
         --calico)
         echo "当前节点设置为master节点,使用calico网络"
         NETWORK="calico"
         IS_MASTER=1
-        shift
+        ;;
         -h|--help)
         echo "Usage: $0 [OPTIONS]"
         echo "Options:"
