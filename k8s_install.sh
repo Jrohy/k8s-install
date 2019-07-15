@@ -40,6 +40,7 @@ ipIsConnect(){
 }
 
 runCommand(){
+    echo ""
     COMMAND=$1
     colorEcho $GREEN $1
     eval $1
@@ -196,7 +197,6 @@ EOF
     [[ -z $(grep kubectl ~/.bashrc) ]] && echo "source <(kubectl completion bash)" >> ~/.bashrc
     [[ -z $(grep kubeadm ~/.bashrc) ]] && echo "source <(kubeadm completion bash)" >> ~/.bashrc
     source ~/.bashrc
-    colorEcho $YELLOW "kubectl和kubeadm命令补全重开终端生效!"
     K8S_VERSION=$(kubectl version --short=true|awk 'NR==1{print $3}')
     echo "当前安装的k8s版本: $(colorEcho $GREEN $K8S_VERSION)"
 }
@@ -220,6 +220,7 @@ runK8s(){
     else
         echo "当前为从节点,请手动拷贝运行主节点运行kubeadm init后生成的kubeadm join命令, 如果丢失了join命令, 请在主节点运行`colorEcho $GREEN "kubeadm token create --print-join-command"`"
     fi
+    colorEcho $YELLOW "kubectl和kubeadm命令补全重开终端生效!"
 }
 
 main() {
