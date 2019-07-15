@@ -147,7 +147,7 @@ prepareWork() {
         source <(curl -sL https://git.io/fj8OJ)
     fi
     ## Centos关闭防火墙
-    [[ ${OS} == 'CentOS' || ${OS} == 'Fedora' ]] && { systemctl disable firewalld.service && systemctl stop firewalld.service }
+    [[ ${OS} == 'CentOS' || ${OS} == 'Fedora' ]] && { systemctl disable firewalld.service; systemctl stop firewalld.service; }
     ## 禁用SELinux
     if [ -s /etc/selinux/config ] && grep 'SELINUX=enforcing' /etc/selinux/config; then
         sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
@@ -244,6 +244,7 @@ main() {
     installDependent
     installK8sBase
     runK8s
+    installHelm
 }
 
 main
