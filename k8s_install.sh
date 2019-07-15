@@ -58,6 +58,10 @@ while [[ $# > 0 ]];do
         echo "当前节点设置为master节点,使用flannel网络"
         NETWORK="flannel"
         IS_MASTER=1
+        --calico)
+        echo "当前节点设置为master节点,使用calico网络"
+        NETWORK="calico"
+        IS_MASTER=1
         shift
         -h|--help)
         echo "Usage: $0 [OPTIONS]"
@@ -80,6 +84,9 @@ done
 checkSys() {
     #检查是否为Root
     [ $(id -u) != "0" ] && { colorEcho ${RED} "Error: You must be root to run this script"; exit 1; }
+
+    #检查CPU核数
+    [[ `cat /proc/cpuinfo |grep "processor"|wc -l` == 1 && $IS_MASTER == 1 ]] && { colorEcho ${RED} "主节点CPU核数必须大于等于2!"; exit 1;}
 
     #检查系统信息
     if [[ -e /etc/redhat-release ]];then
@@ -188,13 +195,28 @@ EOF
     [[ -z $(grep kubeadm ~/.bashrc) ]] && echo "source <(kubeadm completion bash)" >> ~/.bashrc
     source ~/.bashrc
     colorEcho $YELLOW "kubectl和kubeadm命令补全重开终端生效!"
+    K8S_VERSION=$(kubectl version --short=true|awk 'NR==1{print $3}')
+    echo "当前安装的k8s版本: $(colorEcho $GREEN $K8S_VERSION)"
 }
 
 runK8s(){
     if [[ $IS_MASTER == 1 ]];then
-        
+        if [[ $NETWORK == "flannel" ]];then
+            runCommand "kubeadm init --pod-network-cidr=10.244.0.0/16 --kubernetes-version=`echo $K8S_VERSION|sed "s/v//g"`"
+            runCommand "mkdir -p $HOME/.kube"
+            runCommand "cp -i /etc/kubernetes/admin.conf $HOME/.kube/config"
+            runCommand "chown $(id -u):$(id -g) $HOME/.kube/config"
+            runCommand "kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml"
+        elif [[ $NETWORK == "calico" ]];then
+            runCommand "kubeadm init --pod-network-cidr=192.168.0.0/16 --kubernetes-version=`echo $K8S_VERSION|sed "s/v//g"`"
+            runCommand "mkdir -p $HOME/.kube"
+            runCommand "cp -i /etc/kubernetes/admin.conf $HOME/.kube/config"
+            runCommand "chown $(id -u):$(id -g) $HOME/.kube/config"
+            CALIO_VERSION=$(curl -s https://docs.projectcalico.org/latest/getting-started/|grep Click|egrep 'v[0-9].[0-9]' -o)
+            runCommand "kubectl apply -f https://docs.projectcalico.org/$CALIO_VERSION/manifests/calico.yaml"
+        fi
     else
-
+        echo "当前为从节点,请手动拷贝运行主节点运行kubeadm init后生成的kubeadm join命令, 如果丢失了join命令, 请在主节点运行`colorEcho $GREEN "kubeadm token create --print-join-command"`"
     fi
 }
 
@@ -203,6 +225,7 @@ main() {
     prepareWork
     installDependent
     installK8sBase
+    runK8s
 }
 
 main
