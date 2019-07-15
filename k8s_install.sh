@@ -21,6 +21,8 @@ CAN_GOOGLE=1
 
 IS_MASTER=0
 
+HELM=0
+
 NETWORK=""
 
 K8S_VERSION=""
@@ -64,6 +66,10 @@ while [[ $# > 0 ]];do
         --calico)
         echo "当前节点设置为master节点,使用calico网络"
         NETWORK="calico"
+        IS_MASTER=1
+        --helm)
+        echo "安装Helm"
+        HELM=1
         IS_MASTER=1
         ;;
         -h|--help)
@@ -139,9 +145,8 @@ prepareWork() {
         colorEcho ${YELLOW} "本机docker未安装, 正在自动安装最新版..."
         source <(curl -sL https://git.io/fj8OJ)
     fi
-    ## 关闭防火墙
-    systemctl disable firewalld.service
-    systemctl stop firewalld.service
+    ## Centos关闭防火墙
+    [[ ${OS} == 'CentOS' || ${OS} == 'Fedora' ]] && { systemctl disable firewalld.service && systemctl stop firewalld.service }
     ## 禁用SELinux
     if [ -s /etc/selinux/config ] && grep 'SELINUX=enforcing' /etc/selinux/config; then
         sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
@@ -221,6 +226,15 @@ runK8s(){
         echo "当前为从节点,请手动拷贝运行主节点运行kubeadm init后生成的kubeadm join命令, 如果丢失了join命令, 请在主节点运行`colorEcho $GREEN "kubeadm token create --print-join-command"`"
     fi
     colorEcho $YELLOW "kubectl和kubeadm命令补全重开终端生效!"
+}
+
+installHelm(){
+    if [[ $IS_MASTER == 1 && $HELM == 1 ]];then
+        curl -L https://git.io/get_helm.sh | bash
+        helm init
+        #命令行补全
+        [[ -z $(grep helm ~/.bashrc) ]] && echo "source <(helm completion bash)" >> ~/.bashrc
+    fi
 }
 
 main() {
