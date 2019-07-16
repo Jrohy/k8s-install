@@ -55,6 +55,7 @@ while [[ $# > 0 ]];do
         --hostname)
         HOST_NAME="$2"
         echo "本机设置的主机名为: `colorEcho $BLUE $HOST_NAME`"
+        echo "127.0.0.1 $HOST_NAME" >> /etc/hosts
         runCommand "hostnamectl --static set-hostname $HOST_NAME"
         shift
         ;;
