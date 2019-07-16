@@ -118,6 +118,7 @@ checkSys() {
         exit 1
     fi
 
+    echo "正在检测当前服务器网络情况..."
     for ((i=0;i<${#GOOGLE_URLS[*]};i++))
     do
         ipIsConnect ${GOOGLE_URLS[$i]}
@@ -144,7 +145,7 @@ prepareWork() {
     ## 安装最新版docker
     if [[ ! $(type docker 2>/dev/null) ]];then
         colorEcho ${YELLOW} "本机docker未安装, 正在自动安装最新版..."
-        source <(curl -sL https://git.io/fj8OJ)
+        source <(curl -sL https://git.io/fj8OJ) --systemd
     fi
     ## Centos关闭防火墙
     [[ ${OS} == 'CentOS' || ${OS} == 'Fedora' ]] && { systemctl disable firewalld.service; systemctl stop firewalld.service; }
