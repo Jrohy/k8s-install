@@ -145,7 +145,7 @@ prepareWork() {
     ## 安装最新版docker
     if [[ ! $(type docker 2>/dev/null) ]];then
         colorEcho ${YELLOW} "本机docker未安装, 正在自动安装最新版..."
-        source <(curl -sL https://git.io/fj8OJ) --systemd
+        source <(curl -sL https://git.io/fj8OJ)
     fi
     ## Centos关闭防火墙
     [[ ${OS} == 'CentOS' || ${OS} == 'Fedora' ]] && { systemctl disable firewalld.service; systemctl stop firewalld.service; }
