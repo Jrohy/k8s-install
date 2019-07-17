@@ -77,10 +77,12 @@ while [[ $# > 0 ]];do
         -h|--help)
         echo "Usage: $0 [OPTIONS]"
         echo "Options:"
-        echo "   -f [file_path], --file=[file_path]:  offline tgz file path"
+        echo "   --flannel                    use flannel network, and set this node as master"
+        echo "   --calico                     use calico network, and set this node as master"
+        echo "   --helm                       install helm, and set this node as master"
+        echo "   --hostname [HOSTNAME]        set hostname"
         echo "   -h, --help:                          find help"
         echo ""
-        echo "Docker binary download link:  $(colorEcho $FUCHSIA $DOWNLOAD_URL)"
         exit 0
         shift # past argument
         ;; 
@@ -143,11 +145,6 @@ installDependent(){
 }
 
 prepareWork() {
-    ## 安装最新版docker
-    if [[ ! $(type docker 2>/dev/null) ]];then
-        colorEcho ${YELLOW} "本机docker未安装, 正在自动安装最新版..."
-        source <(curl -sL https://git.io/fj8OJ)
-    fi
     ## Centos关闭防火墙
     [[ ${OS} == 'CentOS' || ${OS} == 'Fedora' ]] && { systemctl disable firewalld.service; systemctl stop firewalld.service; }
     ## 禁用SELinux
@@ -158,6 +155,52 @@ prepareWork() {
     ## 关闭swap
     swapoff -a
     sed -i 's/.*swap.*/#&/' /etc/fstab
+
+    ## 安装最新版docker
+    if [[ ! $(type docker 2>/dev/null) ]];then
+        colorEcho ${YELLOW} "本机docker未安装, 正在自动安装最新版..."
+        if [[ $CAN_GOOGLE == 1 ]];then
+            sh <(curl -sL https://git.io/fj1m6)
+        else
+            sh <(curl -sL https://git.io/fj1m6) --mirror Aliyun
+        fi
+        systemctl enable docker
+        systemctl start docker
+    fi
+
+    ## 修改cgroupdriver
+    if [[ ! -e /etc/docker/daemon.json || -z `cat /etc/docker/daemon.json|grep systemd` ]];then
+        ## see https://kubernetes.io/docs/setup/production-environment/container-runtimes/
+        mkdir -p /etc/docker
+        if [[ ${OS} == 'CentOS' || ${OS} == 'Fedora' ]];then
+            cat > /etc/docker/daemon.json <<EOF
+{
+    "exec-opts": ["native.cgroupdriver=systemd"],
+    "log-driver": "json-file",
+    "log-opts": {
+        "max-size": "100m"
+    },
+    "storage-driver": "overlay2",
+    "storage-opts": [
+        "overlay2.override_kernel_check=true"
+    ]
+}
+EOF
+        else
+            cat > /etc/docker/daemon.json <<EOF
+{
+  "exec-opts": ["native.cgroupdriver=systemd"],
+  "log-driver": "json-file",
+  "log-opts": {
+    "max-size": "100m"
+  },
+  "storage-driver": "overlay2"
+}
+EOF
+        fi
+        systemctl restart docker
+    fi
+
 }
 
 installK8sBase() {
