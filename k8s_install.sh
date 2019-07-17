@@ -54,23 +54,23 @@ while [[ $# > 0 ]];do
     case $KEY in
         --hostname)
         HOST_NAME="$2"
-        echo "本机设置的主机名为: `colorEcho $BLUE $HOST_NAME`"
+        echo "set hostname: `colorEcho $BLUE $HOST_NAME`"
         echo "127.0.0.1 $HOST_NAME" >> /etc/hosts
         runCommand "hostnamectl --static set-hostname $HOST_NAME"
         shift
         ;;
         --flannel)
-        echo "当前节点设置为master节点,使用flannel网络"
+        echo "use flannel network, and set this node as master"
         NETWORK="flannel"
         IS_MASTER=1
         ;;
         --calico)
-        echo "当前节点设置为master节点,使用calico网络"
+        echo "use calico network, and set this node as master"
         NETWORK="calico"
         IS_MASTER=1
         ;;
         --helm)
-        echo "安装Helm"
+        echo "install Helm, and set this node as maste"
         HELM=1
         IS_MASTER=1
         ;;
@@ -121,12 +121,12 @@ checkSys() {
         exit 1
     fi
 
-    echo "正在检测当前服务器网络情况..."
+    echo "Checking machine network(access google)..."
     for ((i=0;i<${#GOOGLE_URLS[*]};i++))
     do
         ipIsConnect ${GOOGLE_URLS[$i]}
         if [[ ! $? -eq 0 ]]; then
-            colorEcho ${YELLOW} " 当前服务器无法访问谷歌, 切换为国内的镜像源.."
+            colorEcho ${YELLOW} "server can't access google source, switch to chinese source(aliyun).."
             CAN_GOOGLE=0
             break	
         fi
@@ -145,8 +145,18 @@ installDependent(){
 }
 
 prepareWork() {
-    ## Centos关闭防火墙
-    [[ ${OS} == 'CentOS' || ${OS} == 'Fedora' ]] && { systemctl disable firewalld.service; systemctl stop firewalld.service; }
+    ## Centos设置
+    if [[ ${OS} == 'CentOS' || ${OS} == 'Fedora' ]];then
+        if [[ `systemctl list-units --type=service|grep firewalld` ]];then
+            systemctl disable firewalld.service
+            systemctl stop firewalld.service
+        fi
+        cat <<EOF >  /etc/sysctl.d/k8s.conf
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+EOF
+        sysctl --system
+    fi
     ## 禁用SELinux
     if [ -s /etc/selinux/config ] && grep 'SELINUX=enforcing' /etc/selinux/config; then
         sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
@@ -158,7 +168,7 @@ prepareWork() {
 
     ## 安装最新版docker
     if [[ ! $(type docker 2>/dev/null) ]];then
-        colorEcho ${YELLOW} "本机docker未安装, 正在自动安装最新版..."
+        colorEcho ${YELLOW} "docker no install, auto install latest docker..."
         if [[ $CAN_GOOGLE == 1 ]];then
             sh <(curl -sL https://get.docker.com)
         else
@@ -249,7 +259,7 @@ EOF
     [[ -z $(grep kubeadm ~/.bashrc) ]] && echo "source <(kubeadm completion bash)" >> ~/.bashrc
     source ~/.bashrc
     K8S_VERSION=$(kubectl version --short=true|awk 'NR==1{print $3}')
-    echo "当前安装的k8s版本: $(colorEcho $GREEN $K8S_VERSION)"
+    echo "k8s version: $(colorEcho $GREEN $K8S_VERSION)"
 }
 
 runK8s(){
@@ -269,9 +279,9 @@ runK8s(){
             runCommand "kubectl apply -f https://docs.projectcalico.org/$CALIO_VERSION/manifests/calico.yaml"
         fi
     else
-        echo "当前为从节点,请手动拷贝运行主节点运行kubeadm init后生成的kubeadm join命令, 如果丢失了join命令, 请在主节点运行`colorEcho $GREEN "kubeadm token create --print-join-command"`"
+        echo "this node is slave, please manual run 'kubeadm join' command. if forget join command, please run`colorEcho $GREEN "kubeadm token create --print-join-command"` in master node"
     fi
-    colorEcho $YELLOW "kubectl和kubeadm命令补全重开终端生效!"
+    colorEcho $YELLOW "kubectl and kubeadm command completion must reopen ssh to affect!"
 }
 
 installHelm(){
