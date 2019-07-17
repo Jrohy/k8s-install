@@ -160,9 +160,9 @@ prepareWork() {
     if [[ ! $(type docker 2>/dev/null) ]];then
         colorEcho ${YELLOW} "本机docker未安装, 正在自动安装最新版..."
         if [[ $CAN_GOOGLE == 1 ]];then
-            sh <(curl -sL https://git.io/fj1m6)
+            sh <(curl -sL https://get.docker.com)
         else
-            sh <(curl -sL https://git.io/fj1m6) --mirror Aliyun
+            sh <(curl -sL https://get.docker.com) --mirror Aliyun
         fi
         systemctl enable docker
         systemctl start docker
