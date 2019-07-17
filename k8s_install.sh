@@ -279,7 +279,7 @@ runK8s(){
             runCommand "kubectl apply -f https://docs.projectcalico.org/$CALIO_VERSION/manifests/calico.yaml"
         fi
     else
-        echo "this node is slave, please manual run 'kubeadm join' command. if forget join command, please run`colorEcho $GREEN "kubeadm token create --print-join-command"` in master node"
+        echo "this node is slave, please manual run 'kubeadm join' command. if forget join command, please run `colorEcho $GREEN "kubeadm token create --print-join-command"` in master node"
     fi
     colorEcho $YELLOW "kubectl and kubeadm command completion must reopen ssh to affect!"
 }
