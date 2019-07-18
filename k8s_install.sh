@@ -19,8 +19,6 @@ GOOGLE_URLS=(
 
 CAN_GOOGLE=1
 
-SET_CGROUP=1
-
 IS_MASTER=0
 
 HELM=0
@@ -181,14 +179,8 @@ EOF
             if [[ `systemctl list-units --type=service|grep docker` ]];then
                 break
             else
-                if [[ -z $CHANNEL ]];then
-                    # test docker
-                    export CHANNEL=test
-                else
-                    source <(curl -sL https://git.io/fj8OJ)
-                    SET_CGROUP=0
-                    break
-                fi
+                export CHANNEL=test
+                colorEcho ${YELLOW} "stable channel docker can't install, auto install test channel docker..."
             fi
         done
         systemctl enable docker
@@ -196,7 +188,7 @@ EOF
     fi
 
     ## 修改cgroupdriver
-    if [[ SET_CGROUP == 1 && ( ! -e /etc/docker/daemon.json || -z `cat /etc/docker/daemon.json|grep systemd`) ]];then
+    if [[ ! -e /etc/docker/daemon.json || -z `cat /etc/docker/daemon.json|grep systemd` ]];then
         ## see https://kubernetes.io/docs/setup/production-environment/container-runtimes/
         mkdir -p /etc/docker
         if [[ ${OS} == 'CentOS' || ${OS} == 'Fedora' ]];then
