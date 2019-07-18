@@ -171,18 +171,28 @@ EOF
     ## 安装最新版docker
     if [[ ! $(type docker 2>/dev/null) ]];then
         colorEcho ${YELLOW} "docker no install, auto install latest docker..."
-        if [[ $CAN_GOOGLE == 1 ]];then
-            sh <(curl -sL https://get.docker.com)
-        else
-            sh <(curl -sL https://get.docker.com) --mirror Aliyun
-        fi
-        if [[ `systemctl list-units --type=service|grep docker` ]];then
-            systemctl enable docker
-            systemctl start docker
-        else
-            source <(curl -sL https://git.io/fj8OJ)
-            SET_CGROUP=0
-        fi
+        while :
+        do
+            if [[ $CAN_GOOGLE == 1 ]];then
+                sh <(curl -sL https://get.docker.com)
+            else
+                sh <(curl -sL https://get.docker.com) --mirror Aliyun
+            fi
+            if [[ `systemctl list-units --type=service|grep docker` ]];then
+                break
+            else
+                if [[ -z $CHANNEL ]];then
+                    # test docker
+                    export CHANNEL=test
+                else
+                    source <(curl -sL https://git.io/fj8OJ)
+                    SET_CGROUP=0
+                    break
+                fi
+            fi
+        done
+        systemctl enable docker
+        systemctl start docker
     fi
 
     ## 修改cgroupdriver
