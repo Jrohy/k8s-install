@@ -192,7 +192,8 @@ EOF
         ## see https://kubernetes.io/docs/setup/production-environment/container-runtimes/
         mkdir -p /etc/docker
         if [[ ${OS} == 'CentOS' || ${OS} == 'Fedora' ]];then
-            cat > /etc/docker/daemon.json <<EOF
+            if [[ $CAN_GOOGLE == 1 ]];then
+                cat > /etc/docker/daemon.json <<EOF
 {
     "exec-opts": ["native.cgroupdriver=systemd"],
     "log-driver": "json-file",
@@ -205,17 +206,57 @@ EOF
     ]
 }
 EOF
-        else
-            cat > /etc/docker/daemon.json <<EOF
+            else
+                cat > /etc/docker/daemon.json <<EOF
 {
-  "exec-opts": ["native.cgroupdriver=systemd"],
-  "log-driver": "json-file",
-  "log-opts": {
-    "max-size": "100m"
-  },
-  "storage-driver": "overlay2"
+    "exec-opts": ["native.cgroupdriver=systemd"],
+    "log-driver": "json-file",
+    "log-opts": {
+        "max-size": "100m"
+    },
+    "storage-driver": "overlay2",
+    "storage-opts": [
+        "overlay2.override_kernel_check=true"
+    ],
+    "registry-mirrors": [
+        "http://docker.mirrors.ustc.edu.cn"
+    ],
+   "insecure-registries" : [
+        "docker.mirrors.ustc.edu.cn"
+    ]
 }
 EOF
+            fi
+        else
+            if [[ $CAN_GOOGLE == 1 ]];then
+                cat > /etc/docker/daemon.json <<EOF
+{
+    "exec-opts": ["native.cgroupdriver=systemd"],
+    "log-driver": "json-file",
+    "log-opts": {
+        "max-size": "100m"
+    },
+    "storage-driver": "overlay2"
+}
+EOF
+            else
+                cat > /etc/docker/daemon.json <<EOF
+{
+    "exec-opts": ["native.cgroupdriver=systemd"],
+    "log-driver": "json-file",
+    "log-opts": {
+        "max-size": "100m"
+    },
+    "storage-driver": "overlay2",
+    "registry-mirrors": [
+        "http://docker.mirrors.ustc.edu.cn"
+    ],
+    "insecure-registries" : [
+        "docker.mirrors.ustc.edu.cn"
+    ]
+}
+EOF
+            fi
         fi
         systemctl restart docker
     fi
