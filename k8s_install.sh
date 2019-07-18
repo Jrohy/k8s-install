@@ -140,7 +140,9 @@ installDependent(){
         ${PACKAGE_MANAGER} install bash-completion -y
     else
         ${PACKAGE_MANAGER} update
+        ${PACKAGE_MANAGER} install dirmngr -y
         ${PACKAGE_MANAGER} install bash-completion apt-transport-https gpg gpg-agent dirmngr -y
+        ${PACKAGE_MANAGER} install dirmngr -y
     fi
 }
 
