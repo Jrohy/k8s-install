@@ -19,6 +19,8 @@ GOOGLE_URLS=(
 
 CAN_GOOGLE=1
 
+SET_CGROUP=1
+
 IS_MASTER=0
 
 HELM=0
@@ -179,11 +181,12 @@ EOF
             systemctl start docker
         else
             source <(curl -sL https://git.io/fj8OJ)
+            SET_CGROUP=0
         fi
     fi
 
     ## 修改cgroupdriver
-    if [[ ! -e /etc/docker/daemon.json || -z `cat /etc/docker/daemon.json|grep systemd` ]];then
+    if [[ SET_CGROUP == 1 && ( ! -e /etc/docker/daemon.json || -z `cat /etc/docker/daemon.json|grep systemd`) ]];then
         ## see https://kubernetes.io/docs/setup/production-environment/container-runtimes/
         mkdir -p /etc/docker
         if [[ ${OS} == 'CentOS' || ${OS} == 'Fedora' ]];then
@@ -214,7 +217,6 @@ EOF
         fi
         systemctl restart docker
     fi
-
 }
 
 installK8sBase() {
