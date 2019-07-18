@@ -312,6 +312,27 @@ EOF
     echo "k8s version: $(colorEcho $GREEN $K8S_VERSION)"
 }
 
+downloadImages() {
+    if [[ $CAN_GOOGLE == 0 ]];then
+        colorEcho $YELLOW "auto download $K8S_VERSION all k8s.gcr.io images..."
+        K8S_IMAGES=(`kubeadm config images list 2>/dev/null|grep 'k8s.gcr.io'|xargs -r`)
+        for IMAGE in ${K8S_IMAGES[@]}
+        do
+            TEMP_NAME=${IMAGE#*/}
+            if [[ $TEMP_NAME =~ "coredns" ]];then
+                MIRROR_NAME="coredns/"$TEMP_NAME
+            else
+                MIRROR_NAME="mirrorgooglecontainers/"$TEMP_NAME
+            fi
+            docker pull $MIRROR_NAME >/dev/null 2>&1
+            docker tag $MIRROR_NAME $IMAGE >/dev/null 2>&1
+            docker rmi $MIRROR_NAME >/dev/null 2>&1
+            echo "Downloaded image: $(colorEcho $GREEN $IMAGE)"
+            echo ""
+        done
+    fi
+}
+
 runK8s(){
     if [[ $IS_MASTER == 1 ]];then
         if [[ $NETWORK == "flannel" ]];then
@@ -348,6 +369,7 @@ main() {
     prepareWork
     installDependent
     installK8sBase
+    downloadImages
     runK8s
     installHelm
 }
