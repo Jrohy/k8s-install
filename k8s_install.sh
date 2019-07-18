@@ -99,7 +99,7 @@ checkSys() {
     [ $(id -u) != "0" ] && { colorEcho ${RED} "Error: You must be root to run this script"; exit 1; }
 
     #检查CPU核数
-    [[ `cat /proc/cpuinfo |grep "processor"|wc -l` == 1 && $IS_MASTER == 1 ]] && { colorEcho ${RED} "主节点CPU核数必须大于等于2!"; exit 1;}
+    [[ `cat /proc/cpuinfo |grep "processor"|wc -l` == 1 && $IS_MASTER == 1 ]] && { colorEcho ${RED} "master node cpu number should be >= 2!"; exit 1;}
 
     #检查系统信息
     if [[ -e /etc/redhat-release ]];then
@@ -324,9 +324,9 @@ downloadImages() {
             else
                 MIRROR_NAME="mirrorgooglecontainers/"$TEMP_NAME
             fi
-            docker pull $MIRROR_NAME >/dev/null 2>&1
-            docker tag $MIRROR_NAME $IMAGE >/dev/null 2>&1
-            docker rmi $MIRROR_NAME >/dev/null 2>&1
+            docker pull $MIRROR_NAME
+            docker tag $MIRROR_NAME $IMAGE
+            docker rmi $MIRROR_NAME
             echo "Downloaded image: $(colorEcho $GREEN $IMAGE)"
             echo ""
         done
