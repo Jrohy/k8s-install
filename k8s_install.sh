@@ -174,8 +174,12 @@ EOF
         else
             sh <(curl -sL https://get.docker.com) --mirror Aliyun
         fi
-        systemctl enable docker
-        systemctl start docker
+        if [[ `systemctl list-units --type=service|grep docker` ]];then
+            systemctl enable docker
+            systemctl start docker
+        else
+            source <(curl -sL https://git.io/fj8OJ)
+        fi
     fi
 
     ## 修改cgroupdriver
