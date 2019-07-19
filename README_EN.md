@@ -1,5 +1,5 @@
 # k8s-install
-# [中文](README.md)  [English](README_EN.md)
+## [中文](README.md)  [English](README_EN.md)
 
 auto install latest docker && k8s  
 support **CentOS 7/Debian 9+/Ubuntu 16+**
