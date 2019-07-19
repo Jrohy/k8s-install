@@ -35,3 +35,6 @@ u can also set machine hostname by pass '--hostname xxx' param, for example:
 ```
 source <(curl -sL https://git.io/fjXVF) --flannel --hostname master_test
 ```
+tip: every machine must have different hostname to create cluster
+
+#### check result: run `kubectl get nodes` in master node, all ready mean success
