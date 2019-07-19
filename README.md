@@ -36,7 +36,7 @@ slave 节点运行第一步生成的 'kubeadm join xxx'
 ```
 source <(curl -sL https://git.io/fjXVF) --flannel --hostname master_test
 ```
-PS: 如果每台机器的hostname一样, 则后面加入的机器无法加入到集群,需要定义不一样的hostname
+PS: 所有机器的hostname不一样集群才能搭建成功
 
 
-#### 验证搭建结果: 在master服务器上运行`kubectl get nodes`, 所以节点都是ready即搭建成功
+#### 验证搭建结果: 在master服务器上运行`kubectl get nodes`, 所有节点都是ready即搭建成功
