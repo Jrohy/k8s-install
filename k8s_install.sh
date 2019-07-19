@@ -177,7 +177,7 @@ EOF
             else
                 sh <(curl -sL https://get.docker.com) --mirror Aliyun
             fi
-            if [[ `systemctl list-units --type=service --all|grep docker` ]];then
+            if [[ $(type docker 2>/dev/null) ]];then
                 break
             else
                 export CHANNEL=test
