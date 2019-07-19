@@ -260,6 +260,22 @@ EOF
             fi
         fi
         systemctl restart docker
+        if [ $? -ne 0 ];then
+            rm -f /etc/docker/daemon.json
+            if [[ $CAN_GOOGLE == 0 ]];then
+                cat > /etc/docker/daemon.json <<EOF
+{
+    "registry-mirrors": [
+        "http://docker.mirrors.ustc.edu.cn"
+    ],
+    "insecure-registries" : [
+        "docker.mirrors.ustc.edu.cn"
+    ]
+}
+EOF
+            fi
+            systemctl restart docker
+        fi
     fi
 }
 
