@@ -48,15 +48,23 @@ runCommand(){
     eval $1
 }
 
+setHostname(){
+    local HOSTNAME=$1
+    if [[ $HOSTNAME =~ '_' ]];then
+        colorEcho $YELLOW "hostname can't contain '_' character, auto change to '-'.."
+        HOSTNAME=`echo $HOSTNAME|sed 's/_/-/g'`
+    fi
+    echo "set hostname: `colorEcho $BLUE $HOSTNAME`"
+    echo "127.0.0.1 $HOSTNAME" >> /etc/hosts
+    runCommand "hostnamectl --static set-hostname $HOSTNAME"
+}
+
 #######get params#########
 while [[ $# > 0 ]];do
     KEY="$1"
     case $KEY in
         --hostname)
-        HOST_NAME="$2"
-        echo "set hostname: `colorEcho $BLUE $HOST_NAME`"
-        echo "127.0.0.1 $HOST_NAME" >> /etc/hosts
-        runCommand "hostnamectl --static set-hostname $HOST_NAME"
+        setHostname $2
         shift
         ;;
         --flannel)
@@ -120,6 +128,8 @@ checkSys() {
         colorEcho ${RED} "Not support OS, Please reinstall OS and retry!"
         exit 1
     fi
+
+    [[ `cat /etc/hostname` =~ '_' ]] && setHostname `cat /etc/hostname`
 
     echo "Checking machine network(access google)..."
     for ((i=0;i<${#GOOGLE_URLS[*]};i++))
