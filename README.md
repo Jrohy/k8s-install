@@ -38,5 +38,9 @@ source <(curl -sL https://git.io/fjXVF) --flannel --hostname master_test
 ```
 PS: 所有机器的hostname不一样集群才能搭建成功
 
+## 验证结果
+在master服务器上运行:
+1. `kubectl get nodes`, 所有节点都是ready
+2. `kubectl get pods -n kube-system`, 所有Pod READY状态都是1/1
 
-#### 验证搭建结果: 在master服务器上运行`kubectl get nodes`, 所有节点都是ready即搭建成功
+同时符合以上两点即代表k8s集群搭建成功!

@@ -37,4 +37,9 @@ source <(curl -sL https://git.io/fjXVF) --flannel --hostname master_test
 ```
 tip: every machine must have different hostname to create cluster
 
-#### check result: run `kubectl get nodes` in master node, all ready mean success
+## check result
+master node run:
+1. `kubectl get nodes`, all node status is ready
+2. `kubectl get pods -n kube-system`, all pod status is 1/1
+
+all check pass means create k8s cluster success!
