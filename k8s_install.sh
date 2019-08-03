@@ -230,10 +230,7 @@ EOF
         "overlay2.override_kernel_check=true"
     ],
     "registry-mirrors": [
-        "http://docker.mirrors.ustc.edu.cn"
-    ],
-   "insecure-registries" : [
-        "docker.mirrors.ustc.edu.cn"
+        "https://docker.mirrors.ustc.edu.cn/"
     ]
 }
 EOF
@@ -260,10 +257,7 @@ EOF
     },
     "storage-driver": "overlay2",
     "registry-mirrors": [
-        "http://docker.mirrors.ustc.edu.cn"
-    ],
-    "insecure-registries" : [
-        "docker.mirrors.ustc.edu.cn"
+        "https://docker.mirrors.ustc.edu.cn/"
     ]
 }
 EOF
