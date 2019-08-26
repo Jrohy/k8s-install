@@ -346,6 +346,7 @@ downloadImages() {
             TEMP_NAME=${IMAGE#*/}
             if [[ $TEMP_NAME =~ "coredns" ]];then
                 MIRROR_NAME="coredns/"$TEMP_NAME
+                docker pull $MIRROR_NAME
             else
                 for SOURCE in ${DOCKER_IMAGE_SOURCE[@]}
                 do
