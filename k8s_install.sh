@@ -17,6 +17,11 @@ GOOGLE_URLS=(
     k8s.gcr.io
 )
 
+DOCKER_IMAGE_SOURCE=(
+    mirrorgooglecontainers
+    googlecontainer
+)
+
 CAN_GOOGLE=1
 
 IS_MASTER=0
@@ -342,9 +347,17 @@ downloadImages() {
             if [[ $TEMP_NAME =~ "coredns" ]];then
                 MIRROR_NAME="coredns/"$TEMP_NAME
             else
-                MIRROR_NAME="mirrorgooglecontainers/"$TEMP_NAME
+                for SOURCE in ${DOCKER_IMAGE_SOURCE[@]}
+                do
+                    MIRROR_NAME="$SOURCE/$TEMP_NAME"
+                    docker pull $MIRROR_NAME
+                    if [ $? -eq 0 ];then
+                        break
+                    else
+                        colorEcho $YELLOW "try other image source .."
+                    fi
+                done
             fi
-            docker pull $MIRROR_NAME
             docker tag $MIRROR_NAME $IMAGE
             docker rmi $MIRROR_NAME
             echo "Downloaded image: $(colorEcho $GREEN $IMAGE)"
