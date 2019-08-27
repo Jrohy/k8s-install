@@ -84,18 +84,17 @@ while [[ $# > 0 ]];do
         IS_MASTER=1
         ;;
         --helm)
-        echo "install Helm, and set this node as master"
+        echo "install Helm, only use in master node"
         HELM=1
-        IS_MASTER=1
         ;;
         -h|--help)
         echo "Usage: $0 [OPTIONS]"
         echo "Options:"
         echo "   --flannel                    use flannel network, and set this node as master"
         echo "   --calico                     use calico network, and set this node as master"
-        echo "   --helm                       install helm, and set this node as master"
+        echo "   --helm                       install helm, only use in master node"
         echo "   --hostname [HOSTNAME]        set hostname"
-        echo "   -h, --help:                          find help"
+        echo "   -h, --help:                  find help"
         echo ""
         exit 0
         shift # past argument
@@ -434,7 +433,6 @@ EOF
         runCommand "kubectl create -f rbac-config.yaml"
         runCommand "helm init --service-account tiller --history-max 200"
 
-        kubectl taint nodes --all node-role.kubernetes.io/master=:NoSchedule
         rm -f rbac-config.yaml
         #命令行补全
         [[ -z $(grep helm ~/.bashrc) ]] && { echo "source <(helm completion bash)" >> ~/.bashrc; source ~/.bashrc; }

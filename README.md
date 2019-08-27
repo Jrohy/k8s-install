@@ -44,3 +44,12 @@ PS: 所有机器的hostname不一样集群才能搭建成功
 2. `kubectl get pods -n kube-system`, 所有Pod READY状态都是1/1
 
 同时符合以上两点即代表k8s集群搭建成功!
+
+## 命令行参数列表
+```
+k8s_install.sh [-h|--help] [options]
+    --flannel             使用flannel网络, 同时设置当前服务器为Master节点
+    --calico              使用calico网络, 同时设置当前服务器为Master节点
+    --hostname [hostname] 设置服务器hostname
+    --helm                安装helm, master节点才能生效, 设置安装helm同时会设置master节点可调度部署。如果安装完不想设置master节点可调度, 手动运行"kubectl taint nodes --all node-role.kubernetes.io/master=:NoSchedule"
+```

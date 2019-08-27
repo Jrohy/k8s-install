@@ -43,3 +43,12 @@ master node run:
 2. `kubectl get pods -n kube-system`, all pod status is 1/1
 
 all check pass means create k8s cluster success!
+
+## command line
+```
+k8s_install.sh [-h|--help] [options]
+    --flannel                    use flannel network, and set this node as master
+    --calico                     use calico network, and set this node as master
+    --hostname [HOSTNAME]        set hostname
+    --helm                       install helm, only use in master node, will make master node can schedule. if want to master node no-schedule, please run "kubectl taint nodes --all node-role.kubernetes.io/master=:NoSchedule"
+```
