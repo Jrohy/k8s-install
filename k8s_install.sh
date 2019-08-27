@@ -84,7 +84,7 @@ while [[ $# > 0 ]];do
         IS_MASTER=1
         ;;
         --helm)
-        echo "install Helm, and set this node as maste"
+        echo "install Helm, and set this node as master"
         HELM=1
         IS_MASTER=1
         ;;
@@ -339,11 +339,11 @@ EOF
 }
 
 downloadImages() {
-    if [[ $CAN_GOOGLE == 0 ]];then
-        colorEcho $YELLOW "auto download $K8S_VERSION all k8s.gcr.io images..."
-        K8S_IMAGES=(`kubeadm config images list 2>/dev/null|grep 'k8s.gcr.io'|xargs -r`)
-        for IMAGE in ${K8S_IMAGES[@]}
-        do
+    colorEcho $YELLOW "auto download $K8S_VERSION all k8s.gcr.io images..."
+    K8S_IMAGES=(`kubeadm config images list 2>/dev/null|grep 'k8s.gcr.io'|xargs -r`)
+    for IMAGE in ${K8S_IMAGES[@]}
+    do
+        if [[ $CAN_GOOGLE == 0 ]];then
             TEMP_NAME=${IMAGE#*/}
             if [[ $TEMP_NAME =~ "coredns" ]];then
                 MIRROR_NAME="coredns/"$TEMP_NAME
@@ -362,10 +362,12 @@ downloadImages() {
             fi
             docker tag $MIRROR_NAME $IMAGE
             docker rmi $MIRROR_NAME
-            echo "Downloaded image: $(colorEcho $GREEN $IMAGE)"
-            echo ""
-        done
-    fi
+        else
+            docker pull $IMAGE
+        fi
+        echo "Downloaded image: $(colorEcho $GREEN $IMAGE)"
+        echo ""
+    done
 }
 
 runK8s(){
@@ -423,9 +425,17 @@ EOF
             docker pull googlecontainer/tiller:$HELM_VERSION
             docker tag googlecontainer/tiller:$HELM_VERSION gcr.io/kubernetes-helm/tiller:$HELM_VERSION
             docker rmi googlecontainer/tiller:$HELM_VERSION
+        else
+            docker pull gcr.io/kubernetes-helm/tiller:$HELM_VERSION
         fi
+
+        kubectl taint nodes --all node-role.kubernetes.io/master-
+
         runCommand "kubectl create -f rbac-config.yaml"
         runCommand "helm init --service-account tiller --history-max 200"
+
+        kubectl taint nodes --all node-role.kubernetes.io/master=:NoSchedule
+        rm -f rbac-config.yaml
         #命令行补全
         [[ -z $(grep helm ~/.bashrc) ]] && { echo "source <(helm completion bash)" >> ~/.bashrc; source ~/.bashrc; }
     fi
