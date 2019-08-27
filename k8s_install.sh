@@ -15,6 +15,7 @@ FUCHSIA="35m"
 GOOGLE_URLS=(
     packages.cloud.google.com
     k8s.gcr.io
+    gcr.io
 )
 
 DOCKER_IMAGE_SOURCE=(
@@ -391,8 +392,40 @@ runK8s(){
 
 installHelm(){
     if [[ $IS_MASTER == 1 && $HELM == 1 ]];then
+        # install helm client
         curl -L https://git.io/get_helm.sh | bash
-        helm init
+        
+        HELM_VERSION=`helm version -c | grep '^Client' | cut -d'"' -f2`
+
+        # install helm tiller(server)
+        cat > rbac-config.yaml  << EOF
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: tiller
+  namespace: kube-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: tiller
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+  - kind: ServiceAccount
+    name: tiller
+    namespace: kube-system
+EOF
+        # download tiller image if can't access gcr.io
+        if [[ $CAN_GOOGLE == 0 ]];then
+            docker pull googlecontainer/tiller:$HELM_VERSION
+            docker tag googlecontainer/tiller:$HELM_VERSION gcr.io/kubernetes-helm/tiller:$HELM_VERSION
+            docker rmi googlecontainer/tiller:$HELM_VERSION
+        fi
+        runCommand "kubectl create -f rbac-config.yaml"
+        runCommand "helm init --service-account tiller --history-max 200"
         #命令行补全
         [[ -z $(grep helm ~/.bashrc) ]] && { echo "source <(helm completion bash)" >> ~/.bashrc; source ~/.bashrc; }
     fi
