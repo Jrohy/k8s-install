@@ -377,7 +377,7 @@ downloadImages() {
         fi
 
         if [ $? -eq 0 ];then
-            echo "Downloaded image: $(colorEcho $FUCHSIA $IMAGE)"
+            echo "Downloaded image: $(colorEcho $BLUE $IMAGE)"
         else
             echo "Failed download image: $(colorEcho $RED $IMAGE)"
         fi
