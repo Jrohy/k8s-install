@@ -282,10 +282,9 @@ EOF
                 cat > /etc/docker/daemon.json <<EOF
 {
     "registry-mirrors": [
-        "http://docker.mirrors.ustc.edu.cn"
-    ],
-    "insecure-registries" : [
-        "docker.mirrors.ustc.edu.cn"
+        "https://mirror.ccs.tencentyun.com",
+        "https://docker.mirrors.ustc.edu.cn",
+        "https://registry.docker-cn.com"
     ]
 }
 EOF
