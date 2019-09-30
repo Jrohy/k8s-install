@@ -5,6 +5,9 @@
 # cancel centos alias
 [[ -f /etc/redhat-release ]] && unalias -a
 
+# 判断cpu架构
+[[ `uname -m` == "x86_64" ]] && ARCHITECTURE="amd64" || ARCHITECTURE="arm64"
+
 #######color code########
 RED="31m"      
 GREEN="32m"  
@@ -344,12 +347,16 @@ downloadImages() {
     do
         if [[ $CAN_GOOGLE == 0 ]];then
             TEMP_NAME=${IMAGE#*/}
+            IMAGE_INFO=(`echo $TEMP_NAME | tr ':' ' '`)
             if [[ $TEMP_NAME =~ "coredns" ]];then
                 MIRROR_NAME="coredns/"$TEMP_NAME
                 docker pull $MIRROR_NAME
             else
                 for SOURCE in ${DOCKER_IMAGE_SOURCE[@]}
                 do
+                    if [[ $TEMP_NAME =~ "kube" ]];then
+                        TEMP_NAME="${IMAGE_INFO[0]}-$ARCHITECTURE:${IMAGE_INFO[1]}"
+                    fi  
                     MIRROR_NAME="$SOURCE/$TEMP_NAME"
                     docker pull $MIRROR_NAME
                     if [ $? -eq 0 ];then
@@ -364,7 +371,12 @@ downloadImages() {
         else
             docker pull $IMAGE
         fi
-        echo "Downloaded image: $(colorEcho $GREEN $IMAGE)"
+        
+        if [ $? -eq 0 ];then
+            echo "Downloaded image: $(colorEcho $FUCHSIA $IMAGE)"
+        else
+            echo "Failed download image: $(colorEcho $RED $IMAGE)"
+        fi
         echo ""
     done
 }
