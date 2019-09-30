@@ -238,7 +238,9 @@ EOF
         "overlay2.override_kernel_check=true"
     ],
     "registry-mirrors": [
-        "https://docker.mirrors.ustc.edu.cn/"
+        "https://mirror.ccs.tencentyun.com",
+        "https://docker.mirrors.ustc.edu.cn",
+        "https://registry.docker-cn.com"
     ]
 }
 EOF
@@ -265,7 +267,9 @@ EOF
     },
     "storage-driver": "overlay2",
     "registry-mirrors": [
-        "https://docker.mirrors.ustc.edu.cn/"
+        "https://mirror.ccs.tencentyun.com",
+        "https://docker.mirrors.ustc.edu.cn",
+        "https://registry.docker-cn.com"
     ]
 }
 EOF
@@ -371,7 +375,7 @@ downloadImages() {
         else
             docker pull $IMAGE
         fi
-        
+
         if [ $? -eq 0 ];then
             echo "Downloaded image: $(colorEcho $FUCHSIA $IMAGE)"
         else
