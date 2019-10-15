@@ -52,9 +52,9 @@ ipIsConnect(){
 
 runCommand(){
     echo ""
-    COMMAND=$1
-    colorEcho $GREEN $1
-    eval $1
+    local COMMAND=$1
+    echo -e "\033[32m$COMMAND\033[0m"
+    echo $COMMAND|bash
 }
 
 setHostname(){
