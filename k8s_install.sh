@@ -21,10 +21,7 @@ GOOGLE_URLS=(
     gcr.io
 )
 
-DOCKER_IMAGE_SOURCE=(
-    mirrorgooglecontainers
-    googlecontainer
-)
+MIRROR_SOURCE="registry.cn-hangzhou.aliyuncs.com/google_containers"
 
 CAN_GOOGLE=1
 
@@ -348,27 +345,14 @@ downloadImages() {
     K8S_IMAGES=(`kubeadm config images list 2>/dev/null|grep 'k8s.gcr.io'|xargs -r`)
     for IMAGE in ${K8S_IMAGES[@]}
     do
+        if [[ `docker images $IMAGE|awk 'NR!=1'` ]];then
+            echo " already download image: $(colorEcho $GREEN $IMAGE)"
+            continue
+        fi
         if [[ $CAN_GOOGLE == 0 ]];then
-            TEMP_NAME=${IMAGE#*/}
-            IMAGE_INFO=(`echo $TEMP_NAME | tr ':' ' '`)
-            if [[ $TEMP_NAME =~ "coredns" ]];then
-                MIRROR_NAME="coredns/"$TEMP_NAME
-                docker pull $MIRROR_NAME
-            else
-                for SOURCE in ${DOCKER_IMAGE_SOURCE[@]}
-                do
-                    if [[ $TEMP_NAME =~ "kube" ]];then
-                        TEMP_NAME="${IMAGE_INFO[0]}-$ARCHITECTURE:${IMAGE_INFO[1]}"
-                    fi  
-                    MIRROR_NAME="$SOURCE/$TEMP_NAME"
-                    docker pull $MIRROR_NAME
-                    if [ $? -eq 0 ];then
-                        break
-                    else
-                        colorEcho $YELLOW "try other image source .."
-                    fi
-                done
-            fi
+            CORE_NAME=${IMAGE#*/}
+            MIRROR_NAME="$MIRROR_SOURCE/$CORE_NAME"
+            docker pull $MIRROR_NAME
             docker tag $MIRROR_NAME $IMAGE
             docker rmi $MIRROR_NAME
         else
@@ -434,13 +418,16 @@ subjects:
     name: tiller
     namespace: kube-system
 EOF
-        # download tiller image if can't access gcr.io
+        TILLER_IMAGE="gcr.io/kubernetes-helm/tiller:$HELM_VERSION"
+
         if [[ $CAN_GOOGLE == 0 ]];then
-            docker pull googlecontainer/tiller:$HELM_VERSION
-            docker tag googlecontainer/tiller:$HELM_VERSION gcr.io/kubernetes-helm/tiller:$HELM_VERSION
-            docker rmi googlecontainer/tiller:$HELM_VERSION
+            # download tiller image if can't access gcr.io
+            TILLER_MIRROR="$MIRROR_SOURCE/tiller:$HELM_VERSION"
+            docker pull $TILLER_MIRROR
+            docker tag $TILLER_MIRROR $TILLER_IMAGE
+            docker rmi $TILLER_MIRROR
         else
-            docker pull gcr.io/kubernetes-helm/tiller:$HELM_VERSION
+            docker pull $TILLER_IMAGE
         fi
 
         kubectl taint nodes --all node-role.kubernetes.io/master-
