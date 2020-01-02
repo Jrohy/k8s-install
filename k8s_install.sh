@@ -5,9 +5,6 @@
 # cancel centos alias
 [[ -f /etc/redhat-release ]] && unalias -a
 
-# 判断cpu架构
-[[ `uname -m` == "x86_64" ]] && ARCHITECTURE="amd64" || ARCHITECTURE="arm64"
-
 #######color code########
 RED="31m"      
 GREEN="32m"  
@@ -26,8 +23,6 @@ MIRROR_SOURCE="registry.cn-hangzhou.aliyuncs.com/google_containers"
 CAN_GOOGLE=1
 
 IS_MASTER=0
-
-HELM=0
 
 NETWORK=""
 
@@ -83,16 +78,11 @@ while [[ $# > 0 ]];do
         NETWORK="calico"
         IS_MASTER=1
         ;;
-        --helm)
-        echo "install Helm, only use in master node"
-        HELM=1
-        ;;
         -h|--help)
         echo "Usage: $0 [OPTIONS]"
         echo "Options:"
         echo "   --flannel                    use flannel network, and set this node as master"
         echo "   --calico                     use calico network, and set this node as master"
-        echo "   --helm                       install helm, only use in master node"
         echo "   --hostname [HOSTNAME]        set hostname"
         echo "   -h, --help:                  find help"
         echo ""
@@ -146,7 +136,6 @@ checkSys() {
             break	
         fi
     done
-
 }
 
 #安装依赖
@@ -391,52 +380,13 @@ runK8s(){
 }
 
 installHelm(){
-    if [[ $IS_MASTER == 1 && $HELM == 1 ]];then
-        # install helm client
-        curl -L https://git.io/get_helm.sh | bash
-        
-        HELM_VERSION=`helm version -c | grep '^Client' | cut -d'"' -f2`
-
-        # install helm tiller(server)
-        cat > rbac-config.yaml  << EOF
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: tiller
-  namespace: kube-system
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: tiller
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: cluster-admin
-subjects:
-  - kind: ServiceAccount
-    name: tiller
-    namespace: kube-system
-EOF
-        TILLER_IMAGE="gcr.io/kubernetes-helm/tiller:$HELM_VERSION"
-
-        if [[ $CAN_GOOGLE == 0 ]];then
-            # download tiller image if can't access gcr.io
-            TILLER_MIRROR="$MIRROR_SOURCE/tiller:$HELM_VERSION"
-            docker pull $TILLER_MIRROR
-            docker tag $TILLER_MIRROR $TILLER_IMAGE
-            docker rmi $TILLER_MIRROR
-        else
-            docker pull $TILLER_IMAGE
-        fi
-
-        kubectl taint nodes --all node-role.kubernetes.io/master-
-
-        runCommand "kubectl create -f rbac-config.yaml"
-        runCommand "helm init --service-account tiller --history-max 200"
-
-        rm -f rbac-config.yaml
-        #命令行补全
+    if [[ $IS_MASTER == 1 ]];then
+        while :
+        do
+            curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+            [ $? -eq 0 ] && break
+            sleep 1
+        done
         [[ -z $(grep helm ~/.bashrc) ]] && { echo "source <(helm completion bash)" >> ~/.bashrc; source ~/.bashrc; }
     fi
 }
