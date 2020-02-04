@@ -10,13 +10,13 @@
 master 节点服务器运行:  
 ```
 # use flannel network
-source <(curl -sL https://git.io/fjXVF) --flannel
+source <(curl -sL https://git.io/k8s-install) --flannel
 ```
 或者
 
 ```
 # use calico network
-source <(curl -sL https://git.io/fjXVF) --calico
+source <(curl -sL https://git.io/k8s-install) --calico
 ```
 
 运行脚本会自动初始化(kubeadm init), 最后生成 'kubeadm join'命令
@@ -24,7 +24,7 @@ source <(curl -sL https://git.io/fjXVF) --calico
 ## 2. slave节点安装
 slave 节点服务器运行:
 ```
-source <(curl -sL https://git.io/fjXVF)
+source <(curl -sL https://git.io/k8s-install)
 ```
 
 ## 3. 加入集群
@@ -34,7 +34,7 @@ slave 节点运行第一步生成的 'kubeadm join xxx'
 
 可以加入参数'--hostname xxx'来同时设置服务器的hostname, 举个栗子:
 ```
-source <(curl -sL https://git.io/fjXVF) --flannel --hostname master_test
+source <(curl -sL https://git.io/k8s-install) --flannel --hostname master_test
 ```
 PS: 所有机器的hostname不一样集群才能搭建成功
 
