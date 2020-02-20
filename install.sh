@@ -379,18 +379,6 @@ runK8s(){
     colorEcho $YELLOW "kubectl and kubeadm command completion must reopen ssh to affect!"
 }
 
-installHelm(){
-    if [[ $IS_MASTER == 1 ]];then
-        while :
-        do
-            curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
-            [ $? -eq 0 ] && break
-            sleep 1
-        done
-        [[ -z $(grep helm ~/.bashrc) ]] && { echo "source <(helm completion bash)" >> ~/.bashrc; source ~/.bashrc; }
-    fi
-}
-
 main() {
     checkSys
     prepareWork
@@ -398,7 +386,6 @@ main() {
     installK8sBase
     downloadImages
     runK8s
-    installHelm
 }
 
 main
