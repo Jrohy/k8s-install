@@ -191,6 +191,7 @@ EOF
             else
                 colorEcho ${YELLOW} "test channel docker can't install, auto install binary docker..." 
                 source <(curl -sL https://git.io/docker-install)
+                break
             fi
         done
         systemctl enable docker
