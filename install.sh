@@ -174,6 +174,7 @@ EOF
     ## 安装最新版docker
     if [[ ! $(type docker 2>/dev/null) ]];then
         colorEcho ${YELLOW} "docker no install, auto install latest docker..."
+        local TEST_USE=0
         while :
         do
             if [[ $CAN_GOOGLE == 1 ]];then
@@ -183,9 +184,13 @@ EOF
             fi
             if [[ $(type docker 2>/dev/null) ]];then
                 break
-            else
+            elif [[ $TEST_USE == 0 ]];then
                 export CHANNEL=test
+                TEST_USE=1
                 colorEcho ${YELLOW} "stable channel docker can't install, auto install test channel docker..."
+            else
+                colorEcho ${YELLOW} "test channel docker can't install, auto install binary docker..." 
+                source <(curl -sL https://git.io/docker-install)
             fi
         done
         systemctl enable docker
