@@ -174,7 +174,7 @@ EOF
     ## 安装最新版docker
     if [[ ! $(type docker 2>/dev/null) ]];then
         colorEcho ${YELLOW} "docker no install, auto install latest docker..."
-        source <(curl -sL https://git.io/docker-install) -s
+        source <(curl -sL https://docker-install.netlify.app/install.sh) -s
     fi
 
     ## 修改cgroupdriver
