@@ -174,28 +174,7 @@ EOF
     ## 安装最新版docker
     if [[ ! $(type docker 2>/dev/null) ]];then
         colorEcho ${YELLOW} "docker no install, auto install latest docker..."
-        local TEST_USE=0
-        while :
-        do
-            if [[ $CAN_GOOGLE == 1 ]];then
-                sh <(curl -sL https://get.docker.com)
-            else
-                sh <(curl -sL https://get.docker.com) --mirror Aliyun
-            fi
-            if [[ $(type docker 2>/dev/null) ]];then
-                break
-            elif [[ $TEST_USE == 0 ]];then
-                export CHANNEL=test
-                TEST_USE=1
-                colorEcho ${YELLOW} "stable channel docker can't install, auto install test channel docker..."
-            else
-                colorEcho ${YELLOW} "test channel docker can't install, auto install binary docker..." 
-                source <(curl -sL https://git.io/docker-install)
-                break
-            fi
-        done
-        systemctl enable docker
-        systemctl start docker
+        source <(curl -sL https://git.io/docker-install) -s
     fi
 
     ## 修改cgroupdriver
