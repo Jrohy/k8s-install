@@ -10,13 +10,13 @@ three step to quickly create k8s Cluster
 master node run:  
 ```
 # use flannel network
-source <(curl -sL https://git.io/k8s-install) --flannel
+source <(curl -sL https://k8s-install.netlify.app/install.sh) --flannel
 ```
 or 
 
 ```
 # use calico network
-source <(curl -sL https://git.io/k8s-install) --calico
+source <(curl -sL https://k8s-install.netlify.app/install.sh) --calico
 ```
 
 it will init master node and create 'kubeadm join xxx' command
@@ -24,7 +24,7 @@ it will init master node and create 'kubeadm join xxx' command
 ## 2. install slave node
 slave node run
 ```
-source <(curl -sL https://git.io/k8s-install)
+source <(curl -sL https://k8s-install.netlify.app/install.sh)
 ```
 
 ## 3. join cluster
@@ -33,7 +33,7 @@ slave node run first step left command 'kubeadm join xxx'
 ---
 u can also set machine hostname by pass '--hostname xxx' param, for example:
 ```
-source <(curl -sL https://git.io/k8s-install) --flannel --hostname master_test
+source <(curl -sL https://k8s-install.netlify.app/install.sh) --flannel --hostname master_test
 ```
 tip: every machine must have different hostname to create cluster
 
