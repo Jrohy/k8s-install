@@ -68,6 +68,11 @@ while [[ $# > 0 ]];do
         setHostname $2
         shift
         ;;
+        -v|--version)
+        K8S_VERSION=$2
+        echo "prepare install k8s version: $(colorEcho $GREEN $K8S_VERSION)"
+        shift
+        ;;
         --flannel)
         echo "use flannel network, and set this node as master"
         NETWORK="flannel"
@@ -84,6 +89,7 @@ while [[ $# > 0 ]];do
         echo "   --flannel                    use flannel network, and set this node as master"
         echo "   --calico                     use calico network, and set this node as master"
         echo "   --hostname [HOSTNAME]        set hostname"
+        echo "   -v, --version [VERSION]:     install special version k8s"
         echo "   -h, --help:                  find help"
         echo ""
         exit 0
@@ -277,12 +283,10 @@ gpgcheck=1
 repo_gpgcheck=1
 gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
 EOF
-            yum install -y kubelet kubeadm kubectl
         else
             curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
             echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | tee -a /etc/apt/sources.list.d/kubernetes.list
-            apt-get update
-            apt-get install -y kubelet kubeadm kubectl
+            ${PACKAGE_MANAGER} update
         fi
     else
         if [[ $OS == 'Fedora' || $OS == 'CentOS' ]];then
@@ -293,16 +297,20 @@ baseurl=https://mirrors.aliyun.com/kubernetes/yum/repos/kubernetes-el7-x86_64/
 gpgcheck=0
 gpgkey=https://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg
 EOF
-            yum install -y kubelet kubeadm kubectl
         else
             cat <<EOF > /etc/apt/sources.list.d/kubernetes.list
 deb https://mirrors.aliyun.com/kubernetes/apt kubernetes-xenial main
 EOF
             gpg --keyserver keyserver.ubuntu.com --recv-keys BA07F4FB
             gpg --export --armor BA07F4FB | apt-key add -
-            apt-get update
-            apt-get install -y kubelet kubeadm kubectl
+            ${PACKAGE_MANAGER} update
         fi
+    fi
+
+    if [[ $K8S_VERSION ]];then
+        ${PACKAGE_MANAGER} install -y kubelet-$K8S_VERSION kubeadm-$K8S_VERSION kubectl-$K8S_VERSION
+    else
+        ${PACKAGE_MANAGER} install -y kubelet kubeadm kubectl
     fi
     systemctl enable kubelet && systemctl start kubelet
 
