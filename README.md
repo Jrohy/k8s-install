@@ -2,7 +2,7 @@
 ## [中文](README.md)  [English](README_EN.md)
 
 最新版 k8s 快速搭建脚本, 自适应国内外网络环境, 无法连接谷歌源自动切换成国内源(aliyun)来安装  
-支持 **CentOS 7/Debian 9+/Ubuntu 16+**
+支持 **CentOS 7+/Debian 9+/Ubuntu 16+**
 
 三步即可快速搭建k8s集群
 

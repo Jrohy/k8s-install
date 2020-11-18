@@ -2,7 +2,7 @@
 ## [中文](README.md)  [English](README_EN.md)
 
 auto install latest docker && k8s  
-support **CentOS 7/Debian 9+/Ubuntu 16+**
+support **CentOS 7+/Debian 9+/Ubuntu 16+**
 
 three step to quickly create k8s Cluster
 
