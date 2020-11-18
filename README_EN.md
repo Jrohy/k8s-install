@@ -50,4 +50,5 @@ k8s_install.sh [-h|--help] [options]
     --flannel                    use flannel network, and set this node as master
     --calico                     use calico network, and set this node as master
     --hostname [HOSTNAME]        set hostname
+    -v, --version [VERSION]      install special version k8s
 ```

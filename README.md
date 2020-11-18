@@ -48,7 +48,8 @@ PS: 所有机器的hostname不一样集群才能搭建成功
 ## 命令行参数列表
 ```
 k8s_install.sh [-h|--help] [options]
-    --flannel             使用flannel网络, 同时设置当前服务器为Master节点
-    --calico              使用calico网络, 同时设置当前服务器为Master节点
-    --hostname [hostname] 设置服务器hostname
+    --flannel               使用flannel网络, 同时设置当前服务器为Master节点
+    --calico                使用calico网络, 同时设置当前服务器为Master节点
+    --hostname [hostname]   设置服务器hostname
+    -v, --version [version] 安装特定版本的k8s
 ```
