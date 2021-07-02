@@ -333,7 +333,11 @@ downloadImages() {
         fi
         if [[ $CAN_GOOGLE == 0 ]];then
             CORE_NAME=${IMAGE#*/}
-            MIRROR_NAME="$MIRROR_SOURCE/$CORE_NAME"
+            if [[ $CORE_NAME =~ "coredns" ]];then
+                MIRROR_NAME="coredns/coredns:`echo $CORE_NAME|egrep -o "[0-9.]+"`"
+            else
+                MIRROR_NAME="$MIRROR_SOURCE/$CORE_NAME"
+            fi
             docker pull $MIRROR_NAME
             docker tag $MIRROR_NAME $IMAGE
             docker rmi $MIRROR_NAME
