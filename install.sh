@@ -367,8 +367,7 @@ runK8s(){
             runCommand "mkdir -p $HOME/.kube"
             runCommand "cp -i /etc/kubernetes/admin.conf $HOME/.kube/config"
             runCommand "chown $(id -u):$(id -g) $HOME/.kube/config"
-            CALIO_VERSION=$(curl -s https://docs.projectcalico.org/latest/getting-started/|grep Click|egrep 'v[0-9].[0-9]' -o)
-            runCommand "kubectl apply -f https://docs.projectcalico.org/$CALIO_VERSION/manifests/calico.yaml"
+            runCommand "kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml"
         fi
     else
         echo "this node is slave, please manual run 'kubeadm join' command. if forget join command, please run `colorEcho $GREEN "kubeadm token create --print-join-command"` in master node"
