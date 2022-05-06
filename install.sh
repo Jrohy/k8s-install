@@ -155,34 +155,7 @@ installDependent(){
     fi
 }
 
-prepareWork() {
-    ## Centos设置
-    if [[ ${OS} == 'CentOS' || ${OS} == 'Fedora' ]];then
-        if [[ `systemctl list-units --type=service|grep firewalld` ]];then
-            systemctl disable firewalld.service
-            systemctl stop firewalld.service
-        fi
-        cat <<EOF >  /etc/sysctl.d/k8s.conf
-net.bridge.bridge-nf-call-ip6tables = 1
-net.bridge.bridge-nf-call-iptables = 1
-EOF
-        sysctl --system
-    fi
-    ## 禁用SELinux
-    if [ -s /etc/selinux/config ] && grep 'SELINUX=enforcing' /etc/selinux/config; then
-        sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
-        setenforce 0
-    fi
-    ## 关闭swap
-    swapoff -a
-    sed -i 's/.*swap.*/#&/' /etc/fstab
-
-    ## 安装最新版docker
-    if [[ ! $(type docker 2>/dev/null) ]];then
-        colorEcho ${YELLOW} "docker no install, auto install latest docker..."
-        source <(curl -sL https://docker-install.netlify.app/install.sh) -s
-    fi
-
+setupDocker(){
     ## 修改cgroupdriver
     if [[ ! -e /etc/docker/daemon.json || -z `cat /etc/docker/daemon.json|grep systemd` ]];then
         ## see https://kubernetes.io/docs/setup/production-environment/container-runtimes/
@@ -271,6 +244,46 @@ EOF
     fi
 }
 
+setupContainerd() {
+    containerd config default > /etc/containerd/config.toml
+    sed -i 's/SystemdCgroup = false/SystemdCgroup = true/g' /etc/containerd/config.toml
+    systemctl restart containerd
+    systemctl enable containerd
+}
+
+prepareWork() {
+    ## Centos设置
+    if [[ ${OS} == 'CentOS' || ${OS} == 'Fedora' ]];then
+        if [[ `systemctl list-units --type=service|grep firewalld` ]];then
+            systemctl disable firewalld.service
+            systemctl stop firewalld.service
+        fi
+        cat <<EOF >  /etc/sysctl.d/k8s.conf
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+EOF
+        sysctl --system
+    fi
+    ## 禁用SELinux
+    if [ -s /etc/selinux/config ] && grep 'SELINUX=enforcing' /etc/selinux/config; then
+        sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
+        setenforce 0
+    fi
+    ## 关闭swap
+    swapoff -a
+    sed -i 's/.*swap.*/#&/' /etc/fstab
+
+    ## 安装最新版docker
+    if [[ ! $(type docker 2>/dev/null) ]];then
+        colorEcho ${YELLOW} "docker no install, auto install latest docker..."
+        source <(curl -sL https://docker-install.netlify.app/install.sh) -s
+    fi
+
+    setupDocker
+
+    setupContainerd
+}
+
 installK8sBase() {
     if [[ $CAN_GOOGLE == 1 ]];then
         if [[ $OS == 'Fedora' || $OS == 'CentOS' ]];then
@@ -318,7 +331,8 @@ EOF
     [[ -z $(grep kubectl ~/.bashrc) ]] && echo "source <(kubectl completion bash)" >> ~/.bashrc
     [[ -z $(grep kubeadm ~/.bashrc) ]] && echo "source <(kubeadm completion bash)" >> ~/.bashrc
     source ~/.bashrc
-    K8S_VERSION=$(kubectl version --short=true|awk 'NR==1{print $3}')
+    K8S_VERSION=$(kubectl version --output=yaml|grep gitVersion|awk 'NR==1{print $2}')
+    K8S_MINOR_VERSION=`kubectl version --output=yaml|grep minor|head -n 1|tr -cd '[0-9]'`
     echo "k8s version: $(colorEcho $GREEN $K8S_VERSION)"
 }
 
@@ -334,15 +348,21 @@ downloadImages() {
         if [[ $CAN_GOOGLE == 0 ]];then
             CORE_NAME=${IMAGE#*/}
             if [[ $CORE_NAME =~ "coredns" ]];then
-                MIRROR_NAME="coredns/coredns:`echo $CORE_NAME|egrep -o "[0-9.]+"`"
+                MIRROR_NAME="$MIRROR_SOURCE/coredns:`echo $CORE_NAME|egrep -o "[0-9.]+"`"
             else
                 MIRROR_NAME="$MIRROR_SOURCE/$CORE_NAME"
             fi
-            docker pull $MIRROR_NAME
-            docker tag $MIRROR_NAME $IMAGE
-            docker rmi $MIRROR_NAME
+            if [ $K8S_MINOR_VERSION -ge 24 ];then
+                ctr -n k8s.io i pull $MIRROR_NAME
+                ctr -n k8s.io i tag $MIRROR_NAME $IMAGE
+                ctr -n k8s.io i del $MIRROR_NAME
+            else
+                docker pull $MIRROR_NAME
+                docker tag $MIRROR_NAME $IMAGE
+                docker rmi $MIRROR_NAME
+            fi
         else
-            docker pull $IMAGE
+            [ $K8S_MINOR_VERSION -ge 24 ] && ctr -n k8s.io i pull $IMAGE || docker pull $IMAGE
         fi
 
         if [ $? -eq 0 ];then
@@ -371,6 +391,10 @@ runK8s(){
         fi
     else
         echo "this node is slave, please manual run 'kubeadm join' command. if forget join command, please run `colorEcho $GREEN "kubeadm token create --print-join-command"` in master node"
+    fi
+    if [[ `command -v crictl` ]];then
+        crictl config --set runtime-endpoint=unix:///run/containerd/containerd.sock
+        [[ -z $(grep crictl ~/.bashrc) ]] && echo "source <(kubectl completion crictl)" >> ~/.bashrc
     fi
     colorEcho $YELLOW "kubectl and kubeadm command completion must reopen ssh to affect!"
 }
