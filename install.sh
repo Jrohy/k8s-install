@@ -395,7 +395,7 @@ runK8s(){
     fi
     if [[ `command -v crictl` ]];then
         crictl config --set runtime-endpoint=unix:///run/containerd/containerd.sock
-        [[ -z $(grep crictl ~/.bashrc) ]] && echo "source <(kubectl completion crictl)" >> ~/.bashrc
+        [[ -z $(grep crictl ~/.bashrc) ]] && echo "source <(crictl completion bash)" >> ~/.bashrc
     fi
     colorEcho $YELLOW "kubectl and kubeadm command completion must reopen ssh to affect!"
 }
