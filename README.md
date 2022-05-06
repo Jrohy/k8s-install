@@ -53,3 +53,6 @@ k8s_install.sh [-h|--help] [options]
     --hostname [hostname]   设置服务器hostname
     -v, --version [version] 安装特定版本的k8s
 ```
+
+## 注意
+k8s 从1.24版本开始默认不支持docker, 得使用[cri-dockerd](https://github.com/Mirantis/cri-dockerd)才能支持, 因为cri-dockerd国内vps不好安装(从github下载文件), 所以从k8s 1.24版本开始改为用containerd来起k8s(还是会安装docker, 只不过用的containerd是用docker安装后带来的版本)
