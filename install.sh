@@ -338,7 +338,8 @@ EOF
 
 downloadImages() {
     colorEcho $YELLOW "auto download $K8S_VERSION all k8s.gcr.io images..."
-    K8S_IMAGES=(`kubeadm config images list 2>/dev/null|grep 'k8s.gcr.io'|xargs -r`)
+    PAUSE_VERSION=`cat /etc/containerd/config.toml|grep k8s.gcr.io/pause|grep -Po '\d\.\d'`
+    K8S_IMAGES=(`kubeadm config images list 2>/dev/null|grep 'k8s.gcr.io'|xargs -r` "k8s.gcr.io/pause:$PAUSE_VERSION")
     for IMAGE in ${K8S_IMAGES[@]}
     do
         if [[ `docker images $IMAGE|awk 'NR!=1'` ]];then
