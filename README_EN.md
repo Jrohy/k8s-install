@@ -52,3 +52,6 @@ k8s_install.sh [-h|--help] [options]
     --hostname [HOSTNAME]        set hostname
     -v, --version [VERSION]      install special version k8s
 ```
+
+## attentions
+begin with k8s 1.24, k8s cri will use containerd to replace docker
