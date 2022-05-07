@@ -311,11 +311,8 @@ gpgcheck=0
 gpgkey=https://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg
 EOF
         else
-            cat <<EOF > /etc/apt/sources.list.d/kubernetes.list
-deb https://mirrors.aliyun.com/kubernetes/apt kubernetes-xenial main
-EOF
-            gpg --keyserver keyserver.ubuntu.com --recv-keys BA07F4FB
-            gpg --export --armor BA07F4FB | apt-key add -
+            echo "deb https://mirrors.aliyun.com/kubernetes/apt kubernetes-xenial main" | tee -a /etc/apt/sources.list.d/kubernetes.list
+            curl -s https://mirrors.aliyun.com/kubernetes/apt/doc/apt-key.gpg | apt-key add -
             ${PACKAGE_MANAGER} update
         fi
     fi
