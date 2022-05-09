@@ -150,8 +150,7 @@ installDependent(){
         ${PACKAGE_MANAGER} install bash-completion -y
     else
         ${PACKAGE_MANAGER} update
-        ${PACKAGE_MANAGER} install dirmngr -y
-        ${PACKAGE_MANAGER} install bash-completion apt-transport-https gpg gpg-agent -y
+        ${PACKAGE_MANAGER} install bash-completion apt-transport-https -y
     fi
 }
 
@@ -344,9 +343,16 @@ downloadImages() {
     K8S_IMAGES=(`kubeadm config images list 2>/dev/null|grep 'k8s.gcr.io'|xargs -r` "k8s.gcr.io/pause:$PAUSE_VERSION")
     for IMAGE in ${K8S_IMAGES[@]}
     do
-        if [[ `docker images $IMAGE|awk 'NR!=1'` ]];then
-            echo " already download image: $(colorEcho $GREEN $IMAGE)"
-            continue
+        if [ $K8S_MINOR_VERSION -ge 24 ];then
+            if [[ `ctr -n k8s.io i ls -q|grep -w $IMAGE` ]];then
+                echo " already download image: $(colorEcho $GREEN $IMAGE)"
+                continue
+            fi
+        else
+            if [[ `docker images $IMAGE|awk 'NR!=1'` ]];then
+                echo " already download image: $(colorEcho $GREEN $IMAGE)"
+                continue
+            fi
         fi
         if [[ $CAN_GOOGLE == 0 ]];then
             CORE_NAME=${IMAGE#*/}
