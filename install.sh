@@ -69,7 +69,7 @@ while [[ $# > 0 ]];do
         shift
         ;;
         -v|--version)
-        K8S_VERSION=$2
+        K8S_VERSION=`echo "$2"|sed 's/v//g'`
         echo "prepare install k8s version: $(colorEcho $GREEN $K8S_VERSION)"
         shift
         ;;
@@ -317,10 +317,15 @@ EOF
         fi
     fi
 
-    if [[ $K8S_VERSION ]];then
-        ${PACKAGE_MANAGER} install -y kubelet-$K8S_VERSION kubeadm-$K8S_VERSION kubectl-$K8S_VERSION
-    else
+    if [[ -z $K8S_VERSION ]];then
         ${PACKAGE_MANAGER} install -y kubelet kubeadm kubectl
+    else
+        if [[ $PACKAGE_MANAGER == "apt-get" ]];then
+            INSTALL_VERSION=`apt-cache madison kubectl|grep $K8S_VERSION|cut -d \| -f 2|sed 's/ //g'`
+            ${PACKAGE_MANAGER} install -y kubelet=$INSTALL_VERSION kubeadm=$INSTALL_VERSION kubectl=$INSTALL_VERSION
+        else
+            ${PACKAGE_MANAGER} install -y kubelet-$K8S_VERSION kubeadm-$K8S_VERSION kubectl-$K8S_VERSION
+        fi
     fi
     systemctl enable kubelet && systemctl start kubelet
 
