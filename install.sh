@@ -284,37 +284,18 @@ EOF
 }
 
 installK8sBase() {
-    if [[ $CAN_GOOGLE == 1 ]];then
-        if [[ $OS == 'Fedora' || $OS == 'CentOS' ]];then
-            cat <<EOF | tee /etc/yum.repos.d/kubernetes.repo
-[kubernetes]
-name=Kubernetes
-baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-\$basearch
-enabled=1
-gpgcheck=1
-repo_gpgcheck=1
-gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
-exclude=kubelet kubeadm kubectl
-EOF
-        else
-            curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
-            echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | tee /etc/apt/sources.list.d/kubernetes.list
-            ${PACKAGE_MANAGER} update
-        fi
-    else
-        if [[ $OS == 'Fedora' || $OS == 'CentOS' ]];then
-            cat>>/etc/yum.repos.d/kubrenetes.repo<<EOF
+    if [[ $OS == 'Fedora' || $OS == 'CentOS' ]];then
+        cat>>/etc/yum.repos.d/kubrenetes.repo<<EOF
 [kubernetes]
 name=Kubernetes Repo
 baseurl=https://mirrors.aliyun.com/kubernetes/yum/repos/kubernetes-el7-x86_64/
 gpgcheck=0
 gpgkey=https://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg
 EOF
-        else
-            echo "deb https://mirrors.aliyun.com/kubernetes/apt kubernetes-xenial main" | tee /etc/apt/sources.list.d/kubernetes.list
-            curl -s https://mirrors.aliyun.com/kubernetes/apt/doc/apt-key.gpg | apt-key add -
-            ${PACKAGE_MANAGER} update
-        fi
+    else
+        curl -s https://mirrors.aliyun.com/kubernetes/apt/doc/apt-key.gpg | apt-key add -
+        echo "deb https://mirrors.aliyun.com/kubernetes/apt kubernetes-xenial main" | tee /etc/apt/sources.list.d/kubernetes.list
+        ${PACKAGE_MANAGER} update
     fi
 
     if [[ -z $K8S_VERSION ]];then
