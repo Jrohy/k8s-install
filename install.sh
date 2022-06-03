@@ -82,12 +82,12 @@ while [[ $# > 0 ]];do
         is_master=1
         ;;
         -h|--help)
-        echo "Usage: $0 [OPTIONS]"
+        echo "Usage: $0 [options]"
         echo "Options:"
         echo "   --flannel                    use flannel network, and set this node as master"
         echo "   --calico                     use calico network, and set this node as master"
-        echo "   --hostname [HOSTNAME]        set hostname"
-        echo "   -v, --version [VERSION]:     install special version k8s"
+        echo "   --hostname [hostname]        set hostname"
+        echo "   -v, --version [version]:     install special version k8s"
         echo "   -h, --help:                  find help"
         echo ""
         exit 0
