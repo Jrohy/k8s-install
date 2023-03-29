@@ -34,7 +34,7 @@ color_echo(){
 
 ip_is_connect(){
     ping -c2 -i0.3 -W1 $1 &>/dev/null
-    if [ $? -eq 0 ];thens
+    if [ $? -eq 0 ];then
         return 0
     else
         return 1
