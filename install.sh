@@ -185,6 +185,7 @@ EOF
         "overlay2.override_kernel_check=true"
     ],
     "registry-mirrors": [
+        "https://docker.nju.edu.cn",
         "https://mirror.ccs.tencentyun.com",
         "https://docker.mirrors.ustc.edu.cn",
         "https://registry.docker-cn.com"
@@ -214,6 +215,7 @@ EOF
     },
     "storage-driver": "overlay2",
     "registry-mirrors": [
+        "https://docker.nju.edu.cn",
         "https://mirror.ccs.tencentyun.com",
         "https://docker.mirrors.ustc.edu.cn",
         "https://registry.docker-cn.com"
@@ -229,6 +231,7 @@ EOF
                 cat > /etc/docker/daemon.json <<EOF
 {
     "registry-mirrors": [
+        "https://docker.nju.edu.cn",
         "https://mirror.ccs.tencentyun.com",
         "https://docker.mirrors.ustc.edu.cn",
         "https://registry.docker-cn.com"
