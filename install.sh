@@ -283,7 +283,7 @@ EOF
 
 install_k8s_base() {
     if [[ $os == 'Fedora' || $os == 'CentOS' ]];then
-        cat>>/etc/yum.repos.d/kubrenetes.repo<<EOF
+        cat>>/etc/yum.repos.d/kubernetes.repo<<EOF
 [kubernetes]
 name=Kubernetes Repo
 baseurl=https://mirrors.aliyun.com/kubernetes/yum/repos/kubernetes-el7-x86_64/
